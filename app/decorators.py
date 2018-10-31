@@ -17,7 +17,7 @@ def token_required(f):
         if not token:
             return jsonify({"message":"token is missing"}),401
         try:
-            data = jwt.decode(token, app.config['SECRETE_KEY'])
+            data = jwt.decode(token, app.config['SECRETE_KEY'], algorithms=['HS256'])
             current_user = data['sub']
         except:
             return jsonify({"token":"token is missing"}),401
@@ -25,10 +25,10 @@ def token_required(f):
     return decorated
 
 def generate_token(user):
-        payload = {
-                "exp":datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
-                "iat":datetime.datetime.utcnow(),
-                "sub":user[2]
-                }
-        token = jwt.encode( payload,app.config['SECRETE_KEY'], algorithm='HS256').decode("utf-8")
-        return token
+    payload = {
+            "exp":datetime.datetime.utcnow() + datetime.timedelta(minutes=30),
+            "iat":datetime.datetime.utcnow(),
+            "sub":user
+            }
+    token = jwt.encode( payload,app.config['SECRETE_KEY'], algorithm='HS256').decode("utf-8")
+    return token
