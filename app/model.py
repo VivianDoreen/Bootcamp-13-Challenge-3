@@ -2,26 +2,57 @@ import datetime
 from database import  DatabaseConnection
 
 connection = DatabaseConnection()
-
+response = []
 class UserModel(DatabaseConnection):
 
     @staticmethod
-    def register_store_attendant(name, username, password, c_password, email, address, dod, gender, admin):
+    def register_user(public_id, name, username, password, email, address, gender, admin):
         """
         This method registers a store attendant
+        :param public_id:
         :param name:
         :param username:
         :param password:
         :param c_password:
         :param email:
         :param address:
-        :param dod:
         :param gender: 
         :param admin:
         :return: 
         """
-        register_attendant_query = " INSERT INTO store_attendant(name, username, password, c_password, email, address, dod, gender, admin) VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)"
-        connection.cursor.execute(register_attendant_query,(name, username, password, c_password, email, address, dod, gender, admin))
+        register_user_query = " INSERT INTO users(public_id, name, username, password, email, address, gender, admin) VALUES (%s,%s,%s,%s,%s,%s,%s,%s)"
+        connection.cursor.execute(register_user_query,(public_id, name, username, password, email, address, gender, admin))
+
+        return "Successfully registered"
+    @staticmethod
+    def get_users():
+        """
+        This method gets all users
+        :param: 
+        :return: all users
+        """
+        response = []
+        try:
+            query_to_search_users = "SELECT * FROM users"
+            connection.cursor.execute(query_to_search_users)
+            rows = connection.cursor.fetchall()
+            if not rows:
+                return False
+            for eachrow in rows:
+                response.append({
+                    'public_id':eachrow[1],
+                    'name':eachrow[2], 
+                    'username':eachrow[3],
+                    'password':eachrow[4],
+                    'email':eachrow[5],
+                    'address':eachrow[6],
+                    'gender':eachrow[7],
+                    'admin' :eachrow[8]
+            })
+            # print(response)
+            return response
+        except Exception as exc:
+            print(exc)
 
     @staticmethod
     def check_if_attendant_exists_using_username(username):
@@ -35,8 +66,9 @@ class UserModel(DatabaseConnection):
         row = connection.cursor.fetchone()
         return row
 
+   
     @staticmethod
-    def check_if_is_valid_attendant(username, password):
+    def check_if_is_valid_user(username):
         """
         This method logs in a store attendant
         :param username: 
@@ -44,8 +76,8 @@ class UserModel(DatabaseConnection):
         :return: 
         """
         try:
-            query_to_check_for_attendant = "SELECT attendant_id FROM store_attendant WHERE username=%s AND password=%s "
-            connection.cursor.execute(query_to_check_for_attendant, (username, password))
+            query_to_check_for_user = "SELECT * FROM users WHERE username=%s"
+            connection.cursor.execute(query_to_check_for_user, [username])
             row = connection.cursor.fetchone()
             return row
         except Exception as exc:
@@ -53,24 +85,62 @@ class UserModel(DatabaseConnection):
 
 
     @staticmethod
-    def get_attendant_by_id(attendant_id):
+    def get_user_by_id(public_id):
         try:
-            query_to_search_attendant = "SELECT attendant_id FROM store_attendant WHERE attendant_id=%s"
-            connection.cursor.execute(query_to_search_attendant,[attendant_id])
+            query_to_search_attendant = "SELECT * FROM users WHERE public_id=%s"
+            connection.cursor.execute(query_to_search_attendant,[public_id])
             row = connection.cursor.fetchone()
-            return row
+            if not row:
+                return False
+            response.append({
+                'public_id':row[1],
+                'name':row[2], 
+                'username':row[3],
+                'password':row[4],
+                'email':row[5],
+                'address':row[6],
+                'gender':row[7],
+                'admin' :row[8]
+        })
+            return response
         except Exception as exc:
             print(exc)
 
+    @staticmethod
+    def modify_user(public_id, name, username, password, email, address, gender):
+        """
+        This method modifies a user
+        :param public_id: 
+        :param name:
+        :param username:
+        :param password:
+        :param email:
+        :param address:
+        :param gender: 
+        :param admin: 
+        :return: updated user
+        """
+        query_to_search_entry = "SELECT * FROM users WHERE public_id=%s"
+        connection.cursor.execute(query_to_search_entry, (public_id))
+        row = connection.cursor.fetchone()
+        if not row:
+            return False
+        if row[2] == username:
+            return 'update with same username'
+        query_to_update = "UPDATE users SET name=%s, username=%s, password=%s, email=%s, address=%s, gender=%s WHERE public_id=%s"
+        connection.cursor.execute(query_to_update,(name, username, password, email, address, gender))
+        row_updated = connection.cursor.rowcount
+        return row_updated
+
 class CategoryModel(object):
 
-    def __init__(self, cat_name, admin_id):
+    def __init__(self, cat_name, public_id):
         """
         This constructor initialises category
         :param cat_name: 
         :param admin_id: 
         """
-        self.admin_id = admin_id
+        self.public_id = public_id
         self.cat_name = cat_name
         self.date_created = datetime.datetime.utcnow()
         self.date_modified = datetime.datetime.utcnow()
@@ -88,11 +158,11 @@ class CategoryModel(object):
             if row:
                 return True
             query_to_add_category = "INSERT INTO category(cat_name, admin_id,date_created,date_modified) VALUES(%s,%s,%s,%s)"
-            connection.cursor.execute(query_to_add_category,(self.cat_name, self.admin_id, self.date_created, self.date_modified))
+            connection.cursor.execute(query_to_add_category,(self.cat_name, self.public_id, self.date_created, self.date_modified))
             result=[]
             result.append({
                 'cat_name': self.cat_name,
-                'admin_id':self.admin_id,
+                'admin_id':self.public_id,
                 'Date created': self.date_created,
                 'Date Modified': self.date_created
             })
