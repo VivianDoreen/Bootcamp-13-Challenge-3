@@ -22,9 +22,8 @@ class DatabaseConnection():
                                     """ CREATE TABLE IF NOT EXISTS 
                                     category(
                                                 category_id SERIAL PRIMARY KEY NOT NULL,
-                                                public_id VARCHAR(50) UNIQUE,
-                                                cat_name VARCHAR (50) NOT NULL,
-                                                admin_id INTEGER NOT NULL,
+                                                public_id VARCHAR(50),
+                                                cat_name VARCHAR (50) NOT NULL UNIQUE,
                                                 date_created TIMESTAMP, 
                                                 date_modified TIMESTAMP,
                                                 FOREIGN KEY (public_id)REFERENCES 
@@ -36,17 +35,16 @@ class DatabaseConnection():
                                            """ CREATE TABLE IF NOT EXISTS 
                                             products(
                                                         products_id SERIAL PRIMARY KEY,
-                                                        public_id VARCHAR(50) UNIQUE,
+                                                        public_id VARCHAR(50),
                                                         pdt_name VARCHAR (50) NOT NULL, 
                                                         pdt_description VARCHAR (50) NOT NULL,
-                                                        category_id INTEGER NOT NULL,
-                                                        admin_id INTEGER NOT NULL, 
+                                                        cat_name VARCHAR (50) NOT NULL,
                                                         date_created TIMESTAMP, 
                                                         date_modified TIMESTAMP, 
                                                         FOREIGN KEY (public_id)REFERENCES 
                                                         users (public_id) ON DELETE CASCADE ON UPDATE CASCADE,
-                                                        FOREIGN KEY (public_id)REFERENCES 
-                                                        category (public_id) ON DELETE CASCADE ON UPDATE CASCADE 
+                                                        FOREIGN KEY (cat_name)REFERENCES 
+                                                        category (cat_name) ON DELETE CASCADE ON UPDATE CASCADE 
                                                         );"""
                                             )
         
