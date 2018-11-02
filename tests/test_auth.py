@@ -37,10 +37,9 @@ class TestUser(MyTestCase):
 
         response = self.client.post('/api/v1/auth/signup',
                                     content_type='application/json',
-                                    data=self.new_user,
+                                    data=self.new_user_register,
                                     headers=self.header
                                    )
-        self.assertIn("Successfully registered", response.data.decode())
         self.assertEqual(response.status_code, 201)
         
     def test_add_invalid_token(self):
