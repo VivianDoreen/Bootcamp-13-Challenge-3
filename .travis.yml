@@ -6,13 +6,10 @@ python:
 install:
   - pip install -r requirements.txt
   - pip install coveralls
-  
 services:
   - postgresql
 before_script:
-  - "psql -c 'create database ManagerStore;' -U postgres"
-  - "psql -c 'create database testdatabase;' -U postgres"
-
+  - psql -c 'create database ManagerStore;' -U postgres
 # command to run tests
 script: 
   - python3 -m pytest --cov=app
