@@ -1,15 +1,19 @@
 # config file
-
+from database import DatabaseConnection
 
 class MainConfiguration(object):
     """ Main configuration class"""
     DEBUG = False
     CSRF_ENABLED = True
+    database_connection = DatabaseConnection("ManagerStore")
+    database_connection.create_tables()
 
 
 class DevelopmentEnvironment(MainConfiguration):
     """ Configurations for development"""
     DEBUG = True
+    database_connection = DatabaseConnection("ManagerStore")
+    database_connection.create_tables()
 
 
 
@@ -17,12 +21,8 @@ class TestingEnvironment(MainConfiguration):
     """ Configurations for Testing environment"""
     DEBUG = True
     TESTING = True
-
-
-class StagingEnvironment(MainConfiguration):
-    """ Configurations for staging environment"""
-    DEBUG = True
-
+    database_connection = DatabaseConnection("testdatabase")
+    database_connection.create_tables()
 
 class ProductionEnvironment(MainConfiguration):
     """ Configurations for production environment"""

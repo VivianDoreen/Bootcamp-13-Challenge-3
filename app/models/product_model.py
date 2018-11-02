@@ -1,17 +1,17 @@
 import datetime
 from database import  DatabaseConnection
 
-connection = DatabaseConnection()
+connection = DatabaseConnection("ManagerStore")
 response = []
 
 class CategoryModel(object):
-    def __init__(self, cat_name, public_id):
+    def __init__(self, cat_name, current_user):
         """
         This constructor initialises category
         :param cat_name: 
         :param admin_id: 
         """
-        self.public_id = public_id
+        self.current_user = current_user
         self.cat_name = cat_name
         self.date_created = datetime.datetime.utcnow()
         self.date_modified = datetime.datetime.utcnow()
@@ -26,15 +26,17 @@ class CategoryModel(object):
             row = connection.cursor.fetchone()
             if row:
                 return "Category name already exists"
-            query_to_add_category = "INSERT INTO category(cat_name,public_id,date_created,date_modified) VALUES(%s,%s,%s,%s)"
-            connection.cursor.execute(query_to_add_category,(self.cat_name, self.public_id, self.date_created, self.date_modified))
-            result=[]
-            result.append({
-                'cat_name': self.cat_name,
-                'created by':self.public_id,
-                'Date created': self.date_created,
-                'Date Modified': self.date_modified
-            })
+            query_to_add_category = "INSERT INTO category(cat_name,users_id,date_created,date_modified) VALUES(%s,%s,%s,%s)"
+            connection.cursor.execute(query_to_add_category,(self.cat_name, self.current_user, self.date_created, self.date_modified))
+            query_to_search_category = "SELECT * FROM category WHERE cat_name=%s"
+            connection.cursor.execute(query_to_search_category, [self.cat_name])
+            added_category = connection.cursor.fetchone()
+            result = {
+                       'id': added_category[0],
+                        'created by': added_category[1],
+                        'category': added_category[2],
+                        'Date Created': added_category[3]
+                        }
             return result
         except Exception as exc:
             print(exc)
@@ -53,9 +55,9 @@ class CategoryModel(object):
             return "Categories not available"
         for row in rows:
             response.append({
-                            'category_id': row[0],
+                            'id': row[0],
                             'created by': row[1],
-                            'cat_name':row[3],
+                            'category': row[2],
                             'Date Created': row[3]
                             })
         return response
@@ -73,44 +75,61 @@ class CategoryModel(object):
             if not row:
                 return "No category found, Check your id"
             response=[]
-            response.append({
-                            'category_id': row[0],
+            response= {
+                            'id': row[0],
                             'created by': row[1],
-                            'cat_name':row[3],
+                            'category': row[2],
                             'Date Created': row[3]
-                            })
+                            }
             return response
         except Exception as exc:
             print(exc)
 class ProductModel(object):
-    def __init__(self, public_id, pdt_name, pdt_description, cat_name):
+    def __init__(self, current_user, product_name, category, quantity, unit_price, total_price):
         """
         This constructor initialises category
-        :param cat_name: 
-        :param public_id:
-        :param pdt_name:
-        :param pdt_description:
+        :param product_name: 
+        :param category:
+        :param quantity:
+        :param unit_price:
+        :param total_price:
         """
-        self.public_id = public_id
-        self.pdt_name = pdt_name
-        self.pdt_description = pdt_description
-        self.cat_name = cat_name
+        self.current_user = current_user
+        self.product_name = product_name
+        self.category = category
+        self.quantity = quantity
+        self.unit_price = unit_price
+        self.total_price = total_price
         self.date_created = datetime.datetime.utcnow()
         self.date_modified = datetime.datetime.utcnow()
     def create_product(self):
         """
-        Adds category as an object to list
-        :return: the category that has just been added
+        Adds product as an object to list
+        :return: the product that has just been added
         """
         try:
             query_to_search_product = "SELECT * FROM products WHERE pdt_name=%s"
-            connection.cursor.execute(query_to_search_product, [self.pdt_name])
+            connection.cursor.execute(query_to_search_product, [self.product_name])
             row = connection.cursor.fetchone()
             if row:
                 return "Product already exists"
-            query_to_add_products = "INSERT INTO products(public_id, pdt_name, pdt_description, cat_name,date_created,date_modified) VALUES(%s,%s,%s,%s,%s,%s)"
-            connection.cursor.execute(query_to_add_products,(self.public_id, self.pdt_name, self.pdt_description, self.cat_name, self.date_created, self.date_modified))
-            return "product successfully added"
+            query_to_add_products = "INSERT INTO products(users_id, pdt_name, cat_name, quantity, unit_price, total_price, date_created,date_modified) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
+            connection.cursor.execute(query_to_add_products,(self.current_user, self.product_name,self.category, self.quantity, self.unit_price, self.total_price, self.date_created, self.date_modified))
+            query_to_search_product = "SELECT * FROM products WHERE pdt_name=%s"
+            connection.cursor.execute(query_to_search_product, [self.product_name])
+            added_product = connection.cursor.fetchone()
+            result = {
+                        'id': added_product[0],
+                        'created by': added_product[1],
+                        'category': added_product[2],
+                        'product':added_product[3],
+                        'quantity': added_product[4],
+                        'Unit _price': added_product[5],
+                        'Total _price': added_product[6],
+                        'date_created': added_product[7]
+                        }
+
+            return result
             
         except Exception as exc:
             print(exc)
@@ -130,12 +149,14 @@ class ProductModel(object):
             return "Products not available"
         for row in rows:
             response.append({
-                            'pdt_id': row[0],
+                            'id': row[0],
                             'created by': row[1],
-                            'product name': row[2],
-                            'cat_name':row[3],
-                            'Category': row[4],
-                            'Date Created': row[5]
+                            'category': row[2],
+                            'product':row[3],
+                            'quantity': row[4],
+                            'Unit _price': row[5],
+                            'Total _price': row[6],
+                            'date_created': row[7]
                             })
         return response
     
@@ -152,36 +173,59 @@ class ProductModel(object):
             row = connection.cursor.fetchone()
             if not row:
                 return "No product found, Check your id"
-            response=[]
-            response.append({
-                            'pdt_id': row[0],
-                            'created by': row[1],
-                            'product name': row[2],
-                            'product_description':row[3],
-                            'Category': row[4],
-                            'Date Created': row[5]
-                            })
+            response = {
+                    'id': row[0],
+                    'created by': row[1],
+                    'category': row[2],
+                    'product':row[3],
+                    'quantity': row[4],
+                    'Unit _price': row[5],
+                    'Total _price': row[6],
+                    'date_created': row[7]
+                    }
             return response
         except Exception as exc:
             print(exc)
-        
-
-
-
+ 
     @staticmethod
-    def modify_product(search_id, pdt_name, pdt_description, cat_name):
+    def modify_product(search_id, product_name, category, quantity, unit_price, total_price):
         """
         This method modifies a product
         :param products_id: 
-        :param pdt_name: 
-        :param pdt_description: 
-        :param cat_name:
-        :return: updated entry
+        :param product_name: 
+        :param category: 
+        :param quantity:
+        :param unit_price:
+        :param total_price:
+        :return: updated product
         """
         try:
-            query_to_modify_product = "update products set pdt_name=%s, pdt_description=%s, cat_name=%s where products_id=%s"
-            connection.cursor.execute(query_to_modify_product, (pdt_name, pdt_description, cat_name, search_id))
-            return "successfully Updated"
+            date_created = datetime.datetime.utcnow()
+            date_modified = datetime.datetime.utcnow()
+            query_to_check_for_product = "SELECT * FROM products WHERE pdt_name=%s"
+            connection.cursor.execute(query_to_check_for_product, [product_name])
+            row = connection.cursor.fetchone()
+            if not row:
+                print(search_id,product_name, category, quantity, unit_price, total_price)
+                query_to_modify_product = "update products set pdt_name=%s, cat_name=%s,quantity=%s, unit_price = %s, total_price = %s, date_created = %s, date_modified = %s where products_id=%s"
+                connection.cursor.execute(query_to_modify_product, (product_name, category, quantity, unit_price, total_price, date_created, date_modified, search_id))
+                
+                query_to_search_product = "SELECT * FROM products WHERE pdt_name=%s"
+                connection.cursor.execute(query_to_search_product, [product_name])
+                update_product_result = connection.cursor.fetchone()
+                result = {
+                            'id': update_product_result[0],
+                            'created by': update_product_result[1],
+                            'category': update_product_result[2],
+                            'product':update_product_result[3],
+                            'quantity': update_product_result[4],
+                            'Unit _price': update_product_result[5],
+                            'Total _price': update_product_result[6],
+                            'date_created': update_product_result[7]
+                            }
+
+                return result
+            return "product exists"
         except Exception as exc:
             print(exc)
        

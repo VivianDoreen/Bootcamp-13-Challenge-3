@@ -3,7 +3,7 @@ from flask import jsonify, request,make_response, abort
 from app import create_app
 from app.models.product_model import CategoryModel, ProductModel
 import uuid
-from validation import make_public_user
+from validation import make_public_user, ValidateInput
 from app.decorators import generate_token, token_required
 import datetime
 app = create_app('DevelopmentEnv')
@@ -31,13 +31,24 @@ def add_category(current_user):
     This endpoint adds a category 
     :return: 
     """
-    if (not request.json or not 'cat_name'in request.json):
-        abort(400)
+    if (not request.json or not 'category'in request.json ):
+            abort(400)
 
     data = request.get_json() or {}
-    create_category = CategoryModel(data['cat_name'], current_user)
+
+    validate = ValidateInput.validate_category()
+    if not validate(data):
+        return make_response("Check your input values."
+            "\n Name*"
+            " \n\t\t\t\t- Required"
+            "\n\t\t\t\t- Must be a string, "
+            "\n\t\t\t\t- Minlength: 2 characters"
+            "\n\t\t\t\t- Must begin with a character"
+            ), 422
+
+    create_category = CategoryModel(data['category'], current_user)
     return_create_category  = create_category.create_category()
-    return return_create_category, 201
+    return jsonify({"message":return_create_category}), 201
 
 @app.route('/api/v1/products', methods = ['GET'])
 @token_required
@@ -62,15 +73,34 @@ def add_products(current_user):
     This endpoint adds a product 
     :return: 
     """
-    if (not request.json or not 'pdt_name'in request.json
-                         or not 'pdt_description'in request.json
-                         or not 'cat_name'in request.json):
+    if (not request.json or not 'product_name'in request.json
+                         or not 'category'in request.json
+                         or not 'quantity'in request.json
+                         or not 'unit_price' in request.json
+                         ):
         abort(400)
 
     data = request.get_json() or {}
-    create_product = ProductModel(current_user, data['pdt_name'], data['pdt_description'], data['cat_name'])
+    validate = ValidateInput.validate_product()
+    if not validate(data):
+        return make_response("Check your input values."
+            "\n product Name* and category"
+            " \n\t\t\t\t- Required"
+            "\n\t\t\t\t- Must be a string, "
+            "\n\t\t\t\t- Minlength: 2 characters"
+            "\n\t\t\t\t- Must begin with a character"
+            "\n quantity and unit price "
+            "\n\t\t\t\t- Required"
+            "\n\t\t\t\t- Must be an integer "
+            "\n\t\t\t\t- Must begin with a number"
+            ), 422
+
+    total_price =  int(data['quantity']) * int(data['unit_price'])
+    create_product = ProductModel(current_user, data['product_name'], 
+                                                data['category'], data['quantity'],
+                                                data['unit_price'], total_price)
     return_create_category  = create_product.create_product()
-    return return_create_category, 201
+    return jsonify({"product successfully added":return_create_category}), 201
 
 @app.route('/api/v1/products/<int:search_id>', methods = ['PUT'])
 @token_required
@@ -81,14 +111,32 @@ def update_product(current_user, search_id):
     :param search_id: 
     :return: 
     """
-    if (not request.json or not 'pdt_name'in request.json 
-                         or not 'pdt_description'in request.json
-                         or not 'cat_name'in request.json):
-            abort(400)
-
+    if (not request.json or not 'product_name'in request.json
+                         or not 'category'in request.json
+                         or not 'quantity'in request.json
+                         or not 'unit_price' in request.json
+                         ):
+        abort(400)
     data = request.get_json() or {}
-    modify_product  = ProductModel.modify_product(search_id, data['pdt_name'], data['pdt_description'], data['cat_name'])
-    return modify_product, 201
+    validate = ValidateInput.validate_product()
+    if not validate(data):
+        return make_response("Check your input values."
+            "\n product Name* and category"
+            " \n\t\t\t\t- Required"
+            "\n\t\t\t\t- Must be a string, "
+            "\n\t\t\t\t- Minlength: 2 characters"
+            "\n\t\t\t\t- Must begin with a character"
+            "\n quantity and unit price "
+            "\n\t\t\t\t- Required"
+            "\n\t\t\t\t- Must be an integer "
+            "\n\t\t\t\t- Must begin with a number"
+            ), 422
+    total_price =  int(data['quantity']) * int(data['unit_price'])
+    modify_product = ProductModel.modify_product(search_id, data['product_name'], 
+                                                data['category'], data['quantity'],
+                                                data['unit_price'], total_price)
+   
+    return jsonify({"message":modify_product}), 201
 @app.route('/api/v1/products/<int:search_id>', methods = ['DELETE'])
 @token_required
 def delete_product(current_user, search_id):
