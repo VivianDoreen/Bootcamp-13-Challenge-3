@@ -66,6 +66,7 @@ class ValidateInput:
                             }
                 }
                 return Validator(login_schema)
+                
         @staticmethod
         def validate_product():
                 schema = {
@@ -106,4 +107,29 @@ class ValidateInput:
                         }
                 }
                 return Validator(schema)
+        
+        @staticmethod
+        def validate_sale():
+                schema = {
+                'products_id': {
+                        'required': True,
+                        'type': 'integer',
+                        'empty': False,
+                        'regex': r'^[0-9]'
+                            },
+                'quantity': {
+                        'required': True,
+                        'type': 'integer',
+                        'empty': False,
+                        'regex': r'^[0-9]'
+                        },
+                'unit_price': {
+                        'required': True,
+                        'type': 'integer',
+                        'empty': False,
+                        'regex': r'^[0-9]'
+                        }
+                }
+                return Validator(schema)
+
 

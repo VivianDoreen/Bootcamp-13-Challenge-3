@@ -114,6 +114,10 @@ def login():
         return jsonify({"message":"Wrong password"}), 422
 
     return jsonify({
+                'id':user[0],
+                'name':user[1],
+                'email':user[2],
+                'password':user[3],
                 'message': "Login successful",
                 "token":generate_token(user[0]),
                 }),200
