@@ -38,17 +38,6 @@ class TestUser(MyTestCase):
         self.assertEqual(response.data.decode(), '{\n  "User": "No such user, check id"\n}\n')
         self.assertEqual(response.status_code, 200)
     
-    def test_update_user_with_wrong_params(self):
-        """ should test get users"""
-        self.client.post('/api/v1/users',
-                                    content_type='application/json',
-                                    data=self.missing_params,
-                                    headers=self.header
-                                   )
-        response = self.client.put('/api/v1/users/1', headers=self.header)
-        self.assertEqual(response.data.decode(), '{\n  "not found": "Wrong params for json"\n}\n')
-        self.assertEqual(response.status_code, 400)
-    
     def test_delete_user_with_invalid_id(self):
         """ should test delete users with an invalid it"""
         self.client.post('/api/v1/users',

@@ -38,6 +38,13 @@ class MyTestCase(unittest.TestCase):
                                 "confirm_password":"mukuwa",
                                 "role":"admin"
                                })
+        self.new_user_register = json.dumps({
+                                    "name":"Mukuwa Geoffrey",
+                                    "email":"doreenv.@gmail.com",
+                                    "password":"mukuwa",
+                                    "confirm_password":"mukuwa",
+                                    "role":"admin"
+                                })
         self.missing_params = json.dumps({
                                         "":"jiiii@gmail.com",
                                         "password":"joanita"
@@ -55,6 +62,36 @@ class MyTestCase(unittest.TestCase):
                                     "password":"joanita"
                                     })
         
+        self.product = json.dumps({
+                                "product_name":"Frames",
+                                "category":"Furniture",
+                                "quantity":1,
+                                "unit_price":50
+                                })
+        self.empty_product = json.dumps({
+                                        "product_name":"",
+                                        "category":"",
+                                        "quantity":1,
+                                        "unit_price":50
+                                        })
+        self.sale = json.dumps({
+                                        "products_id":5,
+                                        "quantity":8,
+                                        "unit_price":5000
+                                    })
+        self.empty_sale = json.dumps({
+                                        "products_id":"",
+                                        "quantity":"",
+                                        "unit_price":5000
+                                    })
+
+        self.result_empty_sale = (
+                                "Check your input values."
+                                "\n products_id, quantity and unit price "
+                                "\n\t\t\t\t- Required"
+                                "\n\t\t\t\t- Must be an integer "
+                                "\n\t\t\t\t- Must begin with a number"
+                                )
         self.result_empty_string = ("Check your input values."
                                     "\n name*"
                                     " \n\t\t\t\t- Required"
@@ -82,6 +119,18 @@ class MyTestCase(unittest.TestCase):
                             "\n\t\t\t\t- Minlength : 5 characters"
                             "\n\t\t\t\t- Must begin with a character"
                             )
+        self.result_empty_product = (
+                                    "Check your input values."
+                                    "\n product Name* and category"
+                                    " \n\t\t\t\t- Required"
+                                    "\n\t\t\t\t- Must be a string, "
+                                    "\n\t\t\t\t- Minlength: 2 characters"
+                                    "\n\t\t\t\t- Must begin with a character"
+                                    "\n quantity and unit price "
+                                    "\n\t\t\t\t- Required"
+                                    "\n\t\t\t\t- Must be an integer "
+                                    "\n\t\t\t\t- Must begin with a number"
+                                )
 
         response = self.client.post('/api/v1/auth/login',
                                 content_type='application/json',
