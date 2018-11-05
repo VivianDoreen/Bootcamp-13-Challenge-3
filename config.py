@@ -9,10 +9,6 @@ class MainConfiguration(object):
 class DevelopmentEnvironment(MainConfiguration):
     """ Configurations for development"""
     DEBUG = True
-    database_connection = DatabaseConnection("ManagerStore")
-    database_connection.create_tables()
-
-
 
 class TestingEnvironment(MainConfiguration):
     """ Configurations for Testing environment"""
