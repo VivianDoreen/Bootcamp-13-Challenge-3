@@ -1,13 +1,15 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify, request,make_response, abort
-from app import create_app
+from app import app
 from validation import ValidateInput
 from app.models.sales_model import SaleModel
+from config import application_config
 import uuid
 from validation import make_public_user
 from app.decorators import generate_token, token_required
 import datetime
-app = create_app('DevelopmentEnv')
+# app = create_app('DevelopmentEnv')
+env = application_config['DevelopmentEnv']
 
 @app.route('/api/v1/sales', methods=['POST'])
 @token_required

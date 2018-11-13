@@ -1,7 +1,6 @@
 import datetime
 from database import  DatabaseConnection
-
-connection = DatabaseConnection("ManagerStore")
+connection = DatabaseConnection()
 response = []
 
 class SaleModel(object):

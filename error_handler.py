@@ -1,5 +1,8 @@
 from flask import make_response,jsonify
 from app import app
+from config import DevelopmentEnvironment
+# app = create_app('DevelopmentEnv')
+env = DevelopmentEnvironment()
 
 @app.errorhandler(400)
 def wrong_param(error):
@@ -11,7 +14,7 @@ def already_exists(error):
 
 @app.errorhandler(404)
 def not_found(error):
-    return make_response(jsonify({'Method found':'please check id'}), 404)
+    return make_response(jsonify({'Method not found':'please check id'}), 404)
 
 @app.errorhandler(422)
 def wrong_input(error):

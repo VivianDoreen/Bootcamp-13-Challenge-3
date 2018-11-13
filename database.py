@@ -1,8 +1,13 @@
 import psycopg2
 from flask import Flask
+from config import application_config
+
+import os
+
+app = Flask(__name__)
 
 class DatabaseConnection():
-    def __init__(self, database_name):
+    def __init__(self):
         """
         This constructor creates a connection to the database
         :param dbname: 
@@ -11,15 +16,36 @@ class DatabaseConnection():
         :param host: 
         :param port: 
         """
-        self.database_name = database_name
-        self.connection = psycopg2.connect(user = "postgres",
-                                  password = "viv",
-                                  host = "127.0.0.1",
-                                  port = "5432",
-                                  database = self.database_name)        
+        # self.conn_params = dict(
+        #     user = "postgres",
+        #     password = "viv",
+        #     host = "127.0.0.1",
+        #     port = "5432",
+        #     database = ''
+        #     )
+        self.conn_params = dict(
+                user = "gfivvjrdwipjtq",
+                password = "13a48a0f3204482bc5468647f5251f0878f826f29459e55f0374bc72fb38daa0",
+                host = "ec2-23-23-101-25.compute-1.amazonaws.com",
+                port = "5432",
+                database = 'dd1t4am05632i'
+                # ssl=true;
+                # sslfactory='org.postgresql.ssl.NonValidatingFactory'
+                )
+            
+        # if application_config['DevelopmentEnv'].ENV == 'development':
+        #     dbname = application_config['DevelopmentEnv'].DATABASE
+        #     self.conn_params['database'] = dbname
+            
+            # if application_config['TestingEnv'].ENV == 'testing':
+            #     dbname = application_config['TestingEnv'].DATABASE
+            #     self.conn_params['database'] = dbname
+
+        
+        self.connection = psycopg2.connect(**self.conn_params)                        
         self.connection.autocommit = True
         self.cursor = self.connection.cursor()
-
+       
     def create_tables(self):
         """ This method creates all tables"""
         create_table_query_for_category = ( 

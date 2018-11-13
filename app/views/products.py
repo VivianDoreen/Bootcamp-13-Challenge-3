@@ -1,12 +1,14 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify, request,make_response, abort
-from app import create_app
+from app import app
 from app.models.product_model import CategoryModel, ProductModel
 import uuid
+from config import application_config
 from validation import make_public_user, ValidateInput
 from app.decorators import generate_token, token_required
 import datetime
-app = create_app('DevelopmentEnv')
+# app = create_app('DevelopmentEnv')
+env = application_config['DevelopmentEnv']
 
 @app.route('/api/v1/categories', methods = ['GET'])
 @token_required
@@ -64,6 +66,8 @@ def get_products(current_user):
 @token_required
 def get_single_product(current_user, search_id):
     product = ProductModel.get_product(search_id)
+    if product ==  "No product found, Check your id":
+        return jsonify({"message": "No product found, Check your id"}), 404
     return jsonify({'Product': product}), 200
 
 @app.route('/api/v1/products', methods = ['POST'])
@@ -100,6 +104,8 @@ def add_products(current_user):
                                                 data['category'], data['quantity'],
                                                 data['unit_price'], total_price)
     return_create_category  = create_product.create_product()
+    if return_create_category == "Product already exists":
+         return jsonify({"message":return_create_category}), 403
     return jsonify({"product successfully added":return_create_category}), 201
 
 @app.route('/api/v1/products/<int:search_id>', methods = ['PUT'])
@@ -135,7 +141,10 @@ def update_product(current_user, search_id):
     modify_product = ProductModel.modify_product(search_id, data['product_name'], 
                                                 data['category'], data['quantity'],
                                                 data['unit_price'], total_price)
-   
+    if modify_product == "No product found, Check your id":
+        return jsonify({"message":modify_product}), 404
+    if modify_product == "product exists":
+        return jsonify({"message":modify_product}), 403
     return jsonify({"message":modify_product}), 201
 @app.route('/api/v1/products/<int:search_id>', methods = ['DELETE'])
 @token_required

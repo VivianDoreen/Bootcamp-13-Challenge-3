@@ -1,8 +1,10 @@
 import datetime
 from database import  DatabaseConnection
-connection = DatabaseConnection("ManagerStore")
+connection = DatabaseConnection()
+# from database import connect_db
+# connection = connect_db()
 response = []
-class UserModel(DatabaseConnection):
+class UserModel():
     @staticmethod
     def register_user(name, email, password, role):
         """
@@ -27,13 +29,12 @@ class UserModel(DatabaseConnection):
                 if not row:
                     return "No results to fetch"
                 print(row)
-                response = [{
+                response = {
                     'id':row[0],
                     'name':row[1], 
                     'email':row[2],
-                    'password':row[3],
                     'role' :row[4]
-                    }]
+                    }
                 return response        
             return "Email already exists"
         except Exception as exc:
@@ -59,7 +60,6 @@ class UserModel(DatabaseConnection):
                     'id':eachrow[0],
                     'name':eachrow[1], 
                     'email':eachrow[2],
-                    'password':eachrow[3],
                     'role' :eachrow[4]
             })
             return response
@@ -96,7 +96,6 @@ class UserModel(DatabaseConnection):
                     'id':row[0],
                     'name':row[1], 
                     'email':row[2],
-                    'password':row[3],
                     'role' :row[4]
                     }]
             return response[0]
@@ -113,6 +112,11 @@ class UserModel(DatabaseConnection):
         :param role: 
         :return: 
         """
+        query_to_search_user = "SELECT users_id FROM users WHERE users_id=%s"
+        connection.cursor.execute(query_to_search_user,[search_id])
+        row = connection.cursor.fetchone()
+        if not row:
+            return "No such user, check id"
         query_to_check_for_email = "SELECT * FROM users WHERE email=%s"
         connection.cursor.execute(query_to_check_for_email, [email])
         row = connection.cursor.fetchone()
@@ -130,10 +134,10 @@ class UserModel(DatabaseConnection):
                 'id':row[0],
                 'name':row[1], 
                 'email':row[2],
-                'password':row[3],
                 'role' :row[4]
                 }]
             return response[0]
+        return "email already exists"
 
     @staticmethod
     def delete_user(search_id):

@@ -1,7 +1,6 @@
 import datetime
 from database import  DatabaseConnection
-
-connection = DatabaseConnection("ManagerStore")
+connection = DatabaseConnection()
 response = []
 
 class CategoryModel(object):
@@ -126,7 +125,7 @@ class ProductModel(object):
                         'quantity': added_product[4],
                         'Unit _price': added_product[5],
                         'Total _price': added_product[6],
-                        'date_created': added_product[7]
+                        # 'date_created': added_product[7]
                         }
 
             return result
@@ -156,7 +155,7 @@ class ProductModel(object):
                             'quantity': row[4],
                             'Unit _price': row[5],
                             'Total _price': row[6],
-                            'date_created': row[7]
+                            # 'date_created': row[7]
                             })
         return response
     
@@ -181,7 +180,7 @@ class ProductModel(object):
                     'quantity': row[4],
                     'Unit _price': row[5],
                     'Total _price': row[6],
-                    'date_created': row[7]
+                    # 'date_created': row[7]
                     }
             return response
         except Exception as exc:
@@ -202,6 +201,11 @@ class ProductModel(object):
         try:
             date_created = datetime.datetime.utcnow()
             date_modified = datetime.datetime.utcnow()
+            query_to_get_single_product = "SELECT * FROM products WHERE products_id=%s"
+            connection.cursor.execute(query_to_get_single_product, [search_id])
+            row = connection.cursor.fetchone()
+            if not row:
+                return "No product found, Check your id"
             query_to_check_for_product = "SELECT * FROM products WHERE pdt_name=%s"
             connection.cursor.execute(query_to_check_for_product, [product_name])
             row = connection.cursor.fetchone()
@@ -221,7 +225,7 @@ class ProductModel(object):
                             'quantity': update_product_result[4],
                             'Unit _price': update_product_result[5],
                             'Total _price': update_product_result[6],
-                            'date_created': update_product_result[7]
+                            # 'date_created': update_product_result[7]
                             }
 
                 return result
