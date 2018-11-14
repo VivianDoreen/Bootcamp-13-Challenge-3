@@ -14,4 +14,3 @@ database_connection.create_admin()
 from app.views import users
 from app.views import products
 from app.views import sales
-
