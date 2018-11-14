@@ -2,6 +2,7 @@
 import os
 from flask import Flask
 from config import application_config
+#My app
 from database import DatabaseConnection
 from flask-cors import CORS
 
