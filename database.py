@@ -17,17 +17,17 @@ class DatabaseConnection():
         :param port: 
         """
         self.conn_params = dict(
-                user = "gfivvjrdwipjtq",
-                password = "13a48a0f3204482bc5468647f5251f0878f826f29459e55f0374bc72fb38daa0",
-                host = "ec2-23-23-101-25.compute-1.amazonaws.com",
-                port = "5432",
-                database = 'dd1t4am05632i'
-                )
-       
+            user = "gfivvjrdwipjtq",
+            password = "13a48a0f3204482bc5468647f5251f0878f826f29459e55f0374bc72fb38daa0",
+            host = "ec2-23-23-101-25.compute-1.amazonaws.com",
+            port = "5432",
+            database = 'dd1t4am05632i'
+            )
+        
         self.connection = psycopg2.connect(**self.conn_params)                        
         self.connection.autocommit = True
         self.cursor = self.connection.cursor()
-       
+
     def create_tables(self):
         """ This method creates all tables"""
         create_table_query_for_category = ( 
@@ -67,7 +67,7 @@ class DatabaseConnection():
                                         users(
                                                 users_id SERIAL PRIMARY KEY,
                                                 name VARCHAR(50) NOT NULL,
-                                                email VARCHAR (20) UNIQUE,
+                                                email VARCHAR (50) UNIQUE,
                                                 password VARCHAR(100) NOT NULL,
                                                 role VARCHAR(50) NOT NULL
                                                 ); """
@@ -95,6 +95,11 @@ class DatabaseConnection():
         self.cursor.execute(create_table_query_for_category)
         self.cursor.execute(create_table_query_for_products)
         self.cursor.execute(create_table_query_for_sales)
+    
+    # def create_admin(self):
+    #     register_admin_query = " INSERT INTO users(name, email, password, role) VALUES (%s,%s,%s,%s)"
+    #     self.cursor.execute(register_admin_query,("Nabulo vivian doreen", "nabulo@gmail.com", "pbkdf2:sha256:50000$5NsHWNe0$2bef20e2d5bb71000577132950ac888976e3008af7f08832d29442c71b4fdc14", "admin"))
+
     # Remove all the records from the table
     def drop_table(self, table_name):
         """
