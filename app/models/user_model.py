@@ -1,8 +1,7 @@
 import datetime
 from database import  DatabaseConnection
 connection = DatabaseConnection()
-# from database import connect_db
-# connection = connect_db()
+
 response = []
 class UserModel():
     @staticmethod
