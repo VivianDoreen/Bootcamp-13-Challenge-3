@@ -53,7 +53,7 @@ class UserModel():
             connection.cursor.execute(query_to_search_users)
             rows = connection.cursor.fetchall()
             if not rows:
-                return "No Users registered"
+                return "No Users"
             for eachrow in rows:
                 response.append({
                     'id':eachrow[0],

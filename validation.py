@@ -50,6 +50,38 @@ class ValidateInput:
                 return Validator(schema)
 
         @staticmethod
+        def validate_user_modify():
+                schema = {
+                    'name': {
+                            'required': True,
+                            'type': 'string',
+                            'empty': False,
+                            'regex': r'^[a-zA-Z]{2,50}(?:[\s_-]{1}[a-zA-Z]+)*$'
+                            },
+                    'email': {
+                            'required': True,
+                            'type': 'string',
+                            'empty': False,
+                            'regex': r'[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]{2,4}'
+                            },
+                    'password': {
+                            'required': True,
+                            'type': 'string',
+                            'empty': False,
+                            'regex': r'^[a-zA-Z0-9]{5,100}.*[\s.]*$'
+                            },
+                    'role': {
+                                'required': True,
+                                'type': 'string',
+                                'empty': False,
+                                'regex': r'^[a-zA-Z]{2,50}(?:[\s_-]{1}[a-zA-Z]+)*$'
+                                }
+                           
+                }
+            
+                return Validator(schema)
+
+        @staticmethod
         def validate_login_input():
                 login_schema = {
                      'password': {
@@ -84,15 +116,11 @@ class ValidateInput:
                         },
                 'quantity': {
                         'required': True,
-                        'type': 'integer',
                         'empty': False,
-                        'regex': r'^[0-9]'
                         },
                 'unit_price': {
                         'required': True,
-                        'type': 'integer',
                         'empty': False,
-                        'regex': r'^[0-9]'
                         }
                 }
                 return Validator(schema)
@@ -113,21 +141,21 @@ class ValidateInput:
                 schema = {
                 'products_id': {
                         'required': True,
-                        'type': 'integer',
-                        'empty': False,
-                        'regex': r'^[0-9]'
+                        # 'type': 'integer',
+                        'empty': False
+                        # 'regex': r'^[0-9]'
                             },
                 'quantity': {
                         'required': True,
-                        'type': 'integer',
-                        'empty': False,
-                        'regex': r'^[0-9]'
+                        # 'type': 'integer',
+                        'empty': False
+                        # 'regex': r'^[0-9]'
                         },
                 'unit_price': {
                         'required': True,
-                        'type': 'integer',
-                        'empty': False,
-                        'regex': r'^[0-9]'
+                        # 'type': 'integer',
+                        'empty': False
+                        # 'regex': r'^[0-9]'
                         }
                 }
                 return Validator(schema)

@@ -17,11 +17,11 @@ class DatabaseConnection():
         :param port: 
         """
         self.conn_params = dict(
-            user = "gfivvjrdwipjtq",
-            password = "13a48a0f3204482bc5468647f5251f0878f826f29459e55f0374bc72fb38daa0",
-            host = "ec2-23-23-101-25.compute-1.amazonaws.com",
+            user = "postgres",
+            password = "viv",
+            host = "127.0.0.1",
             port = "5432",
-            database = 'dd1t4am05632i'
+            database = 'ManagerStore'
             )
         
         self.connection = psycopg2.connect(**self.conn_params)                        
@@ -98,7 +98,7 @@ class DatabaseConnection():
     
     # def create_admin(self):
     #     register_admin_query = " INSERT INTO users(name, email, password, role) VALUES (%s,%s,%s,%s)"
-    #     self.cursor.execute(register_admin_query,("Nabulo vivian doreen", "nabulo@gmail.com", "pbkdf2:sha256:50000$5NsHWNe0$2bef20e2d5bb71000577132950ac888976e3008af7f08832d29442c71b4fdc14", "admin"))
+    #     self.cursor.execute(register_admin_query,("Nabulo vivian doreen", "nabwire@gmail.com", "pbkdf2:sha256:50000$5NsHWNe0$2bef20e2d5bb71000577132950ac888976e3008af7f08832d29442c71b4fdc14", "admin"))
 
     # Remove all the records from the table
     def drop_table(self, table_name):
