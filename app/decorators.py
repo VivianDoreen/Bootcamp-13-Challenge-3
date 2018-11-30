@@ -24,7 +24,7 @@ def token_required(f):
             if user['role'] != "store_attendant":
                 current_user = data['sub']
         except:
-            return jsonify({"token":"token is missing"}),401
+            return jsonify({"message":"Your session has expired, please login again"}),401
         return f(current_user, *args, **kwargs)
     return decorated
 

@@ -1,17 +1,16 @@
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import jsonify, request,make_response, abort
-from validation import ValidateInput
+from validation.utils_users import validate_input, validate_input_login
 from config import application_config
 from app import app
 from app.models.user_model import UserModel
 import uuid
-from validation import make_public_user
 from app.decorators import generate_token, token_required
 import error_handler
 import datetime
 import os
 
-app.config.from_object('config.DevelopmentEnvironment')
+# app.config.from_object('config.DevelopmentEnvironment')
 
 @app.route('/')
 def index():
@@ -25,7 +24,9 @@ def index():
 @token_required
 def get_users(current_user):
     users_list = UserModel.get_users()
-    return jsonify({'Users of ManagerStore': [make_public_user(user) for user in users_list]}), 200
+    if users_list == "No Users":
+        return jsonify({'users': users_list}), 404
+    return jsonify({'users': users_list}), 200
 
 @app.route('/api/v1/users/<int:search_id>', methods = ['GET'])
 @token_required
@@ -35,24 +36,24 @@ def get_user(current_user, search_id):
         return jsonify({"message":"You are not authorised to view this function"}), 401  
     user = UserModel.get_user_by_id(search_id)
     if user == "No such user, check id":
-        return jsonify({'User':user}), 404
-    return jsonify({'User':user}), 200
+        return jsonify({'user':user}), 404
+    return jsonify({'user':user}), 200
 
 @app.route('/api/v1/auth/signup', methods = ['POST'])
-# @token_required
-def create_user():
+@token_required
+def create_user(current_user):
     if (not request.json or not 'name'in request.json
                          or not 'email' in request.json
                          or not 'password' in request.json
                          or not 'confirm_password' in request.json
                          or not 'role' in request.json
                          ):
-        return jsonify({'message':'Wrong params for json'}), 422
+        return jsonify({'message':'Wrong params for json'}), 400
 
     data = request.get_json() or {}
-    validate = ValidateInput.validate_input()
-    if not validate(data):
-        abort(422) 
+    validate = validate_input(data)
+    if validate != True:
+        return jsonify({"message":validate_input(data)}),422
 
     if data['password'] != data['confirm_password']:
         return jsonify({'message':'Passwords do not match'}), 422
@@ -70,25 +71,25 @@ def update_user(current_user, search_id):
     :param search_id: 
     :return: 
     """
-
     data = request.get_json() or {}
-    print(data)
-    print(search_id)
+    validate = validate_input(data)
+    if validate != True:
+        return jsonify({"message":validate_input(data)}),422
     edit_user = UserModel.modify_user(search_id,data['name'], data['email'],
                                       data['password'], data['role']
                                      )
     if edit_user == "No such user, check id":
         return jsonify({'message': edit_user}), 404
     if edit_user == "email already exists":
-        return jsonify({'message': edit_user}), 404
+        return jsonify({'message': edit_user}), 403
     return jsonify({'message': edit_user}), 201
 @app.route('/api/v1/users/<int:search_id>', methods = ['DELETE'])
 @token_required
 def delete_user(current_user, search_id):
     user = UserModel.delete_user(search_id)
     if user == "No such user, check id":
-        return jsonify({'Message': user}), 404
-    return jsonify({'Message': user}), 200
+        return jsonify({'user': user}), 404
+    return jsonify({'user': user}), 200
 
 @app.route('/api/v1/auth/login',methods=['POST'])
 def login():
@@ -96,18 +97,9 @@ def login():
                          or not 'password' in request.json):
         return jsonify({"message":"wrong params"})
     data = request.get_json() or {}
-    validate = ValidateInput.validate_login_input()
-    if not validate(data):
-        return make_response("\n Email*"
-                            "\n\t\t\t\t- Required"
-                            "\n\t\t\t\t- Must begin with any character"
-                            "\n\t\t\t\t- Must be a valid mail"
-                            "\n Password* "
-                            "\n\t\t\t\t- Required"
-                            "\n\t\t\t\t- Must be a string "
-                            "\n\t\t\t\t- Minlength : 5 characters"
-                            "\n\t\t\t\t- Must begin with a character"
-                            ), 422 
+    validate = validate_input_login(data)
+    if validate != True:
+        return jsonify({"Error":validate_input_login(data)}),422
     user = UserModel.check_if_is_valid_user(data['email'])
 
     if user == "user not found":
@@ -119,6 +111,7 @@ def login():
     return jsonify({
                 'id':user[0],
                 'name':user[1],
+                'role':user[4],
                 'email':user[2],
                 'message': "Login successful",
                 'x-access-token':generate_token(user[0])

@@ -4,10 +4,11 @@ from app import app
 from app.models.product_model import CategoryModel, ProductModel
 import uuid
 from config import application_config
-from validation import make_public_user, ValidateInput
 from app.decorators import generate_token, token_required
 import datetime
-# app = create_app('DevelopmentEnv')
+from validation.utils_products import validate_input
+from validation.utils_category import validate_input_category
+
 env = application_config['DevelopmentEnv']
 
 @app.route('/api/v1/categories', methods = ['GET'])
@@ -18,12 +19,16 @@ def get_category(current_user):
     :return: 
     """
     category_list = CategoryModel.get_categories()
-    return jsonify({'categories List': category_list}), 200
+    if category_list == "Categories not available":
+        return jsonify({'categories': category_list}), 404
+    return jsonify({'categories': category_list}), 200
 
 @app.route('/api/v1/categories/<int:search_id>', methods = ['GET'])
 @token_required
 def get_single_category(current_user, search_id):
     category = CategoryModel.get_category(search_id)
+    if category == 'No category found, Check your id':
+        return jsonify({'categories': category}), 404
     return jsonify({'categories': category}), 200
 
 @app.route('/api/v1/categories', methods = ['POST'])
@@ -35,22 +40,46 @@ def add_category(current_user):
     """
     if (not request.json or not 'category'in request.json ):
             abort(400)
-
     data = request.get_json() or {}
 
-    validate = ValidateInput.validate_category()
-    if not validate(data):
-        return make_response("Check your input values."
-            "\n Name*"
-            " \n\t\t\t\t- Required"
-            "\n\t\t\t\t- Must be a string, "
-            "\n\t\t\t\t- Minlength: 2 characters"
-            "\n\t\t\t\t- Must begin with a character"
-            ), 422
+    validate = validate_input_category(data)
+    if validate != True:
+        return jsonify({"message":validate_input_category(data)}),422
 
     create_category = CategoryModel(data['category'], current_user)
     return_create_category  = create_category.create_category()
     return jsonify({"message":return_create_category}), 201
+
+@app.route('/api/v1/categories/<int:search_id>', methods = ['PUT'])
+@token_required
+def update_category(current_user, search_id):
+    """
+    This endpoint modifies a category
+    :param version: 
+    :param search_id: 
+    :return: 
+    """
+    if (not request.json or not 'category'in request.json):
+        abort(400)
+    data = request.get_json() or {}
+    validate = validate_input_category(data)
+    if validate != True:
+        return jsonify({"message":validate_input_category(data)}),422
+    modify_category = CategoryModel.modify_category(search_id, data['category'])
+    if modify_category == "No category found, Check your id":
+        return jsonify({"message":modify_category}), 404
+    if modify_category == "Category already exists":
+        return jsonify({"message":modify_category}), 403
+    return jsonify({"message":modify_category}), 201
+
+
+@app.route('/api/v1/categories/<int:search_id>', methods = ['DELETE'])
+@token_required
+def delete_single_category(current_user, search_id):
+    category_delete = CategoryModel.delete_category(search_id)
+    if category_delete == 'No category found, please check your id':
+        return jsonify({'Message': category_delete}), 404
+    return jsonify({'Message': category_delete}), 200
 
 @app.route('/api/v1/products', methods = ['GET'])
 @token_required
@@ -60,15 +89,17 @@ def get_products(current_user):
     :return: 
     """
     products_list = ProductModel.get_products()
-    return jsonify({'Products List': products_list}), 200
+    if products_list == "Products not available":
+        return jsonify({'ProductsList': products_list}),404
+    return jsonify({'ProductsList': products_list}),200
 
 @app.route('/api/v1/products/<int:search_id>', methods = ['GET'])
 @token_required
 def get_single_product(current_user, search_id):
     product = ProductModel.get_product(search_id)
     if product ==  "No product found, Check your id":
-        return jsonify({"message": "No product found, Check your id"}), 404
-    return jsonify({'Product': product}), 200
+        return jsonify({"message": product}),404
+    return jsonify({'product': product}),200
 
 @app.route('/api/v1/products', methods = ['POST'])
 @token_required
@@ -85,28 +116,24 @@ def add_products(current_user):
         abort(400)
 
     data = request.get_json() or {}
-    validate = ValidateInput.validate_product()
-    if not validate(data):
-        return make_response("Check your input values."
-            "\n product Name* and category"
-            " \n\t\t\t\t- Required"
-            "\n\t\t\t\t- Must be a string, "
-            "\n\t\t\t\t- Minlength: 2 characters"
-            "\n\t\t\t\t- Must begin with a character"
-            "\n quantity and unit price "
-            "\n\t\t\t\t- Required"
-            "\n\t\t\t\t- Must be an integer "
-            "\n\t\t\t\t- Must begin with a number"
-            ), 422
+    validate = validate_input(data)
+    if validate != True:
+        return jsonify({"message":validate_input(data)}),422
 
     total_price =  int(data['quantity']) * int(data['unit_price'])
     create_product = ProductModel(current_user, data['product_name'], 
                                                 data['category'], data['quantity'],
                                                 data['unit_price'], total_price)
-    return_create_category  = create_product.create_product()
-    if return_create_category == "Product already exists":
-         return jsonify({"message":return_create_category}), 403
-    return jsonify({"product successfully added":return_create_category}), 201
+    return_create_product  = create_product.create_product()
+    if return_create_product == "product already exists":
+        return jsonify({"message":return_create_product}),403
+    if return_create_product == "category doesnot exist":
+        return jsonify({"message":return_create_product}),404  
+    if return_create_product == "quantity must be a positive number":
+        return jsonify({"message":return_create_product}),422 
+    if return_create_product == "unit price must be a positive number":
+        return jsonify({"message":return_create_product}),422 
+    return jsonify({"message":return_create_product}),201
 
 @app.route('/api/v1/products/<int:search_id>', methods = ['PUT'])
 @token_required
@@ -124,19 +151,9 @@ def update_product(current_user, search_id):
                          ):
         abort(400)
     data = request.get_json() or {}
-    validate = ValidateInput.validate_product()
-    if not validate(data):
-        return make_response("Check your input values."
-            "\n product Name* and category"
-            " \n\t\t\t\t- Required"
-            "\n\t\t\t\t- Must be a string, "
-            "\n\t\t\t\t- Minlength: 2 characters"
-            "\n\t\t\t\t- Must begin with a character"
-            "\n quantity and unit price "
-            "\n\t\t\t\t- Required"
-            "\n\t\t\t\t- Must be an integer "
-            "\n\t\t\t\t- Must begin with a number"
-            ), 422
+    validate = validate_input(data)
+    if validate != True:
+        return jsonify({"message":validate_input(data)}),422
     total_price =  int(data['quantity']) * int(data['unit_price'])
     modify_product = ProductModel.modify_product(search_id, data['product_name'], 
                                                 data['category'], data['quantity'],

@@ -27,16 +27,10 @@ class CategoryModel(object):
                 return "Category name already exists"
             query_to_add_category = "INSERT INTO category(cat_name,users_id,date_created,date_modified) VALUES(%s,%s,%s,%s)"
             connection.cursor.execute(query_to_add_category,(self.cat_name, self.current_user, self.date_created, self.date_modified))
-            query_to_search_category = "SELECT * FROM category WHERE cat_name=%s"
+            query_to_search_category = "SELECT cat_name FROM category WHERE cat_name=%s"
             connection.cursor.execute(query_to_search_category, [self.cat_name])
             added_category = connection.cursor.fetchone()
-            result = {
-                       'id': added_category[0],
-                        'created by': added_category[1],
-                        'category': added_category[2],
-                        'Date Created': added_category[3]
-                        }
-            return result
+            return added_category, "Successfully added"
         except Exception as exc:
             print(exc)
     @classmethod        
@@ -55,9 +49,9 @@ class CategoryModel(object):
         for row in rows:
             response.append({
                             'id': row[0],
-                            'created by': row[1],
+                            'admin': row[1],
                             'category': row[2],
-                            'Date Created': row[3]
+                            'dateCreated': row[3]
                             })
         return response
     @classmethod
@@ -68,21 +62,79 @@ class CategoryModel(object):
         :return: single category and status code 200 
         """
         try:
-            query_to_get_single_category = "SELECT * FROM category WHERE category_id=%s"
+            query_to_get_single_category = "SELECT name, cat_name, date_created FROM category, users WHERE category.category_id=%s AND category.users_id = users.users_id"
             connection.cursor.execute(query_to_get_single_category, [search_id])
             row = connection.cursor.fetchone()
             if not row:
                 return "No category found, Check your id"
             response=[]
             response= {
-                            'id': row[0],
-                            'created by': row[1],
-                            'category': row[2],
-                            'Date Created': row[3]
-                            }
+                        'admin': row[0],
+                        'category': row[1],
+                        'date_created': row[2]
+                        }
             return response
         except Exception as exc:
             print(exc)
+
+    @staticmethod
+    def modify_category(search_id, category):
+        """
+        This method modifies a category
+        :param search_id: 
+        :param category: 
+        :return: updated category
+        """
+        try:
+            date_created = datetime.datetime.utcnow()
+            date_modified = datetime.datetime.utcnow()
+            query_to_get_single_category = "SELECT * FROM category WHERE category_id=%s"
+            connection.cursor.execute(query_to_get_single_category, [search_id])
+            row = connection.cursor.fetchone()
+            if not row:
+                return "No category found, Check your id"
+            query_to_check_for_category = "SELECT * FROM category WHERE cat_name=%s"
+            connection.cursor.execute(query_to_check_for_category, [category])
+            row = connection.cursor.fetchone()
+            if not row:
+                query_to_modify_category = "update category set cat_name=%s, date_created = %s, date_modified = %s where category_id=%s"
+                connection.cursor.execute(query_to_modify_category, (category, date_created, date_modified, search_id))
+                
+                query_to_search_category = "SELECT * FROM category WHERE cat_name=%s"
+                connection.cursor.execute(query_to_search_category, [category])
+                update_category_result = connection.cursor.fetchone()
+                result = {
+                        'id': update_category_result[0],
+                        'createdby': update_category_result[1],
+                        'category': update_category_result[2],
+                        'DateCreated': update_category_result[3]
+                        }
+                return result
+            return "Category already exists"
+        except Exception as exc:
+            print(exc)
+
+
+    @classmethod
+    def delete_category(cls, search_id):
+        """
+        This method deletes a single category
+        :param search_id: 
+        :return: message and status code 200 
+        """
+        try:
+            query_to_get_single_category = "SELECT * FROM category WHERE category_id=%s"
+            connection.cursor.execute(query_to_get_single_category, [search_id])
+            row = connection.cursor.fetchone()
+            if not row:
+                return "No category found, please check your id"
+            query_to_delete_single_category = "delete from category where category_id=%s"
+            connection.cursor.execute(query_to_delete_single_category, [search_id])
+            return "category deleted successfully"
+        except Exception as exc:
+            print(exc)
+
+
 class ProductModel(object):
     def __init__(self, current_user, product_name, category, quantity, unit_price, total_price):
         """
@@ -111,7 +163,18 @@ class ProductModel(object):
             connection.cursor.execute(query_to_search_product, [self.product_name])
             row = connection.cursor.fetchone()
             if row:
-                return "Product already exists"
+                return "product already exists"
+            query_to_search_category = "SELECT * FROM category WHERE cat_name=%s"
+            connection.cursor.execute(query_to_search_category, [self.category])
+            row_category = connection.cursor.fetchone()
+            if not row_category:
+                return "category doesnot exist"
+            change_type_quantity = int(self.quantity)
+            change_type_unit_price = int(self.unit_price)
+            if change_type_quantity <= 0:
+                return "quantity must be a positive number"
+            if change_type_unit_price <=0:
+                return "unit price must be a positive number"
             query_to_add_products = "INSERT INTO products(users_id, pdt_name, cat_name, quantity, unit_price, total_price, date_created,date_modified) VALUES(%s,%s,%s,%s,%s,%s,%s,%s)"
             connection.cursor.execute(query_to_add_products,(self.current_user, self.product_name,self.category, self.quantity, self.unit_price, self.total_price, self.date_created, self.date_modified))
             query_to_search_product = "SELECT * FROM products WHERE pdt_name=%s"
@@ -149,13 +212,12 @@ class ProductModel(object):
         for row in rows:
             response.append({
                             'id': row[0],
-                            'created by': row[1],
+                            'createdby': row[1],
                             'category': row[2],
                             'product':row[3],
                             'quantity': row[4],
-                            'Unit _price': row[5],
-                            'Total _price': row[6],
-                            # 'date_created': row[7]
+                            'Unit_price': row[5],
+                            'Total_price': row[6]
                             })
         return response
     
@@ -174,13 +236,13 @@ class ProductModel(object):
                 return "No product found, Check your id"
             response = {
                     'id': row[0],
-                    'created by': row[1],
+                    'admin': row[1],
                     'category': row[2],
                     'product':row[3],
                     'quantity': row[4],
-                    'Unit _price': row[5],
-                    'Total _price': row[6],
-                    # 'date_created': row[7]
+                    'Unit_price': row[5],
+                    'Total_price': row[6],
+                    'date_created': row[7]
                     }
             return response
         except Exception as exc:
