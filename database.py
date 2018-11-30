@@ -24,11 +24,19 @@ class DatabaseConnection():
         #     database = 'ManagerStore'
         #     )
         self.conn_params = dict(
+<<<<<<< HEAD
             user = "gmwejdgiawxwsn",
             password = "d8f6c977ac22e089f08076452526b86ea4d5ce40b338e912ae2b256c50b96819",
             host = "ec2-54-204-40-248.compute-1.amazonaws.com",
             port = "5432",
             database = 'dffbgb2dpdlbm5'
+=======
+            user = "postgres",
+            password = "viv",
+            host = "127.0.0.1",
+            port = "5432",
+            database = 'ManagerStore'
+>>>>>>> 6f9673a4ad923627ee9dd4da9f699d885a157c04
             )
         
         self.connection = psycopg2.connect(**self.conn_params)                        
@@ -103,9 +111,15 @@ class DatabaseConnection():
         self.cursor.execute(create_table_query_for_products)
         self.cursor.execute(create_table_query_for_sales)
     
+<<<<<<< HEAD
     def create_admin(self):
         register_admin_query = " INSERT INTO users(name, email, password, role) VALUES (%s,%s,%s,%s)"
         self.cursor.execute(register_admin_query,("Nabulo vivian doreen", "nabwire@gmail.com", "pbkdf2:sha256:50000$5NsHWNe0$2bef20e2d5bb71000577132950ac888976e3008af7f08832d29442c71b4fdc14", "admin"))
+=======
+    # def create_admin(self):
+    #     register_admin_query = " INSERT INTO users(name, email, password, role) VALUES (%s,%s,%s,%s)"
+    #     self.cursor.execute(register_admin_query,("Nabulo vivian doreen", "nabwire@gmail.com", "pbkdf2:sha256:50000$5NsHWNe0$2bef20e2d5bb71000577132950ac888976e3008af7f08832d29442c71b4fdc14", "admin"))
+>>>>>>> 6f9673a4ad923627ee9dd4da9f699d885a157c04
 
     # Remove all the records from the table
     def drop_table(self, table_name):
