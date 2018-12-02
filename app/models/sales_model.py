@@ -61,10 +61,10 @@ class SaleModel(object):
             if not update_product_result:
                 return "Unable to update product"
             print("successfully updated")
-            # sale_list = []
 
             query_to_add_sales = "INSERT INTO sales(users_id, products_id, quantity, unit_price, total_price, date_created,date_modified) VALUES(%s,%s,%s,%s,%s,%s,%s)"
-            connection.cursor.executemany(query_to_add_sales,(self.current_user, self.products_id, change_type_quantity, change_type_unit_price, self.total_price, self.date_created, self.date_modified))
+            connection.cursor.execute(query_to_add_sales,(self.current_user, self.products_id, change_type_quantity, change_type_unit_price, self.total_price, self.date_created, self.date_modified))
+            
             query_to_search_sale = "SELECT * FROM sales WHERE products_id=%s"
             print(self.products_id)
             connection.cursor.execute(query_to_search_sale, [self.products_id])
