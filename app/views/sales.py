@@ -7,8 +7,21 @@ from config import application_config
 import uuid
 from validation.utils_sales import validate_input
 from app.decorators import generate_token, token_required
+from app.models.shopping_cart_model import ShoppingCartModel
 import datetime
 env = application_config['DevelopmentEnv']
+
+@app.route('/api/v1/many_sales', methods=['POST'])
+@token_required
+def add_many_sales(current_user):
+    """
+    This endpoint adds many sales
+    return:
+    """
+    get_many = ShoppingCartModel.get_sales()
+    post_many = SaleModel.post_many_sales(get_many)
+    print(post_many)
+    return jsonify({"manysales":post_many}), 201
 
 @app.route('/api/v1/sales', methods=['POST'])
 @token_required
