@@ -1,5 +1,7 @@
 import datetime
 from database import  DatabaseConnection
+import psycopg2
+
 connection = DatabaseConnection()
 response = []
 
@@ -105,6 +107,27 @@ class SaleModel(object):
                             'Date Created': row[6]
                             })
         return response
+
+    @staticmethod       
+    def post_many_sales(sales):
+        """
+        This method inserts many sales
+        :return: all sales in the store
+        """
+
+        try:
+            list_sales = tuple(sales)
+            print(list_sales)
+            query_to_add_many_sales = "insert into sales(users_id, products_id, quantity, unit_price, total_price) values (%(users_id)s, %(products_id)s, %(quantity)s, %(unit_price)s, %(total_price)s)"
+            # connection.cursor.executemany("""INSERT INTO sales(users_id, products_id, quantity, unit_price, total_price) VALUES (%(users_id)s, %(products_id)s, %(quantity)s, %(unit_price)s, %(total_price)s)""", list_sales)
+            connection.cursor.executemany(query_to_add_many_sales, list_sales)
+            print(connection.cursor.rowcount(), "Record inserted successfully into sales table")
+
+            # query_to_select_inserted_sales = "select * from sales"
+            return "Record inserted successfully into sales table"
+        except(Exception, psycopg2.DatabaseError) as error:
+            print("failed inserting record into sales table {}" .format(error))
+
     @classmethod
     def get_single_sale(cls, search_id):
         """
