@@ -40,15 +40,14 @@ def get_user(current_user, search_id):
     return jsonify({'user':user}), 200
 
 @app.route('/api/v1/auth/signup', methods = ['POST'])
-@token_required
-def create_user(current_user):
+def create_user():
     if (not request.json or not 'name'in request.json
                          or not 'email' in request.json
                          or not 'password' in request.json
                          or not 'confirm_password' in request.json
                          or not 'role' in request.json
                          ):
-        return jsonify({'message':'Wrong params for json'}), 400
+        return jsonify({'message':'All fields are required'}), 400
 
     data = request.get_json() or {}
     validate = validate_input(data)
@@ -103,7 +102,7 @@ def login():
     user = UserModel.check_if_is_valid_user(data['email'])
 
     if user == "user not found":
-        return jsonify({'message':'could not verify the user'}), 401
+        return jsonify({'message':'Invalid username and password'}), 401
 
     if not check_password_hash(user[3], data['password']):
         return jsonify({"message":"Wrong password"}), 404
@@ -113,6 +112,6 @@ def login():
                 'name':user[1],
                 'role':user[4],
                 'email':user[2],
-                'message': "Login successful",
+                'loginstatus': "Login successful",
                 'x-access-token':generate_token(user[0])
                 }),200
